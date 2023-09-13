@@ -44,6 +44,7 @@ type OCIAuthConfig struct {
 	Fingerprint          string `yaml:"fingerprint"`
 	Passphrase           string `yaml:"passphrase"`
 	UseInstancePrincipal bool   `yaml:"useInstancePrincipal"`
+	UseWorkloadIdentity  bool   `yaml:"useWorkloadIdentity"`
 }
 
 // OCIConfig holds the configuration for the OCI Provider.
@@ -95,6 +96,11 @@ func NewOCIProvider(cfg OCIConfig, domainFilter endpoint.DomainFilter, zoneIDFil
 		configProvider, err = auth.InstancePrincipalConfigurationProvider()
 		if err != nil {
 			return nil, errors.Wrap(err, "error creating OCI instance principal config provider")
+		}
+	} else if cfg.Auth.UseWorkloadIdentity {
+		configProvider, err = auth.OkeWorkloadIdentityConfigurationProvider()
+		if err != nil {
+			return nil, errors.Wrap(err, "error creating OCI workload identity config provider")
 		}
 	} else {
 		configProvider = common.NewRawConfigurationProvider(
